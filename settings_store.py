@@ -23,7 +23,13 @@ DEFAULTS = {
 }
 
 
+def is_streamlit_cloud() -> bool:
+    return os.environ.get("IS_STREAMLIT_CLOUD") == "true"
+
+
 def load_settings() -> dict:
+    if is_streamlit_cloud():
+        return dict(DEFAULTS)
     if not os.path.exists(SETTINGS_PATH):
         return dict(DEFAULTS)
     try:
@@ -39,6 +45,8 @@ def load_settings() -> dict:
 
 
 def save_settings(values: dict) -> None:
+    if is_streamlit_cloud():
+        return
     current = load_settings()
     current.update({k: v for k, v in values.items() if k in DEFAULTS})
     try:

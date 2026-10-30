@@ -9,11 +9,15 @@ from landed_cost_engine import (
     parse_obligation_file,
     parse_schedule_file,
 )
-from settings_store import load_settings, save_settings
+from settings_store import is_streamlit_cloud, load_settings, save_settings
 
 st.set_page_config(page_title="IEX Landed Cost per Unit", page_icon="\u26a1", layout="centered")
 
-saved = load_settings()
+cloud_deployment = is_streamlit_cloud()
+if cloud_deployment:
+    saved = st.session_state.setdefault("app_settings", load_settings())
+else:
+    saved = load_settings()
 
 st.title("SJCL \u2013 IEX Landed Cost per Unit")
 st.caption(
@@ -25,7 +29,10 @@ st.caption(
 
 with st.sidebar:
     st.header("Settings")
-    st.caption("Saved automatically \u2014 these stay the same next time you open the app.")
+    if cloud_deployment:
+        st.caption("Settings are private to this browser session and reset when it ends.")
+    else:
+        st.caption("Saved automatically \u2014 these stay the same next time you open the app.")
     margin_paisa = st.number_input(
         "Trading margin (paisa / unit)",
         min_value=0.0,
@@ -100,7 +107,10 @@ current_settings = {
     "ap_offpeak": ap_offpeak,
 }
 if current_settings != {k: saved[k] for k in current_settings}:
-    save_settings(current_settings)
+    if cloud_deployment:
+        st.session_state["app_settings"] = current_settings
+    else:
+        save_settings(current_settings)
 
 st.divider()
 
