@@ -24,7 +24,12 @@ DEFAULTS = {
 
 
 def is_streamlit_cloud() -> bool:
-    return os.environ.get("IS_STREAMLIT_CLOUD") == "true"
+    cloud_flag = os.environ.get("IS_STREAMLIT_CLOUD", "").lower()
+    return (
+        cloud_flag in {"1", "true", "yes"}
+        or bool(os.environ.get("STREAMLIT_RUNTIME"))
+        or os.path.abspath(__file__).startswith("/mount/src/")
+    )
 
 
 def load_settings() -> dict:
